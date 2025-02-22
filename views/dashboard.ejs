@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFiMon Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            padding: 20px;
+        }
+        .header {
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: 200px;
+        }
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:hover {
+            background: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">WiFiMon Dashboard <br><a href="/logout">Logout</a> <a href="/getCon">Connected Devices</a></div>
+    
+    <div class="container">
+        <div class="grid-container">
+            <div class="card">
+                <h3>Monitoring</h3>
+                <button onclick="handleMon()"><span id="but-stat">Start Monitoring</span></button>
+                <p id="status">Monitoring stopped!</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="grid-container">
+            <div class="card">
+                <h3>Top Queried Domains</h3>
+                <canvas id="domainChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>DNS Query Types</h3>
+                <canvas id="queryChart"></canvas>
+            </div>
+        </div>
+        <div class="table-container">
+            <h3>DNS Query Logs</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Source IP</th>
+                        <th>Destination IP</th>
+                        <th>Query Type</th>
+                        <th>Domain</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% mons.forEach(function(mon) { %>
+                        <tr>
+                            <td><%= mon.timestamp %></td>
+                            <td><%= mon.src_ip %></td>
+                            <td><%= mon.dest_ip %></td>
+                            <td><%= mon.query_type %></td>
+                            <td><%= mon.domain %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/tldts@latest/dist/index.umd.min.js"></script>
+
+    <script>
+        function handleMon(){
+            var status = document.querySelector("#status");
+            var butStat = document.querySelector("#but-stat");
+
+            if(status.innerHTML == "Monitoring stopped!"){
+                status.innerHTML = "Monitoring started!";
+                butStat.innerHTML = "Stop Monitoring";
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", "/start", false ); // false for synchronous request
+                xmlHttp.send( null );
+            } else {
+                status.innerHTML = "Monitoring stopped!";
+                butStat.innerHTML = "Start Monitoring";
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", "/stop", false ); // false for synchronous request
+                xmlHttp.send( null );
+            }
+        }
+
+
+        let mons = <%- JSON.stringify(mons) %>;
+
+        // Prepare data for charts
+        let domainCounts = {};
+        let queryTypeCounts = {};
+
+        mons.forEach(mon => {
+            let rootDomain = tldts.parse(mon.domain).domain || mon.domain; // Extract root domain
+            domainCounts[rootDomain] = (domainCounts[rootDomain] || 0) + 1;
+
+            queryTypeCounts[mon.query_type] = (queryTypeCounts[mon.query_type] || 0) + 1;
+        });
+
+        let domainLabels = Object.keys(domainCounts);
+        let domainData = Object.values(domainCounts);
+        
+        let queryLabels = Object.keys(queryTypeCounts);
+        let queryData = Object.values(queryTypeCounts);
+
+        var domainCtx = document.getElementById('domainChart').getContext('2d');
+        new Chart(domainCtx, {
+            type: 'bar',
+            data: {
+                labels: domainLabels,
+                datasets: [{
+                    label: 'Queries',
+                    data: domainData,
+                    backgroundColor: ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71']
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        var queryCtx = document.getElementById('queryChart').getContext('2d');
+        new Chart(queryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: queryLabels,
+                datasets: [{
+                    data: queryData,
+                    backgroundColor: ['#9b59b6', '#3498db', '#e74c3c', '#f1c40f']
+                }]
+            },
+            options: { responsive: true }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>WiFiMon Dashboard</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <style>
+       body {
+           font-family: Arial, sans-serif;
+           background-color: #f4f4f4;
+           margin: 0;
+           padding: 0;
+       }
+       .container {
+           width: 90%;
+           margin: auto;
+           padding: 20px;
+       }
+       .header {
+           background: #333;
+           color: #fff;
+           padding: 15px;
+           text-align: center;
+           font-size: 24px;
+       }
+       .table-container {
+           margin-top: 20px;
+           overflow-x: auto;
+       }
+       table {
+           width: 100%;
+           border-collapse: collapse;
+           background: #fff;
+           box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+           border-radius: 10px;
+           overflow: hidden;
+       }
+       th, td {
+           padding: 10px;
+           text-align: left;
+           border-bottom: 1px solid #ddd;
+       }
+       th {
+           background: #3498db;
+           color: white;
+       }
+       tr:hover {
+           background: #f1f1f1;
+       }
+   </style>
+</head>
+<body>
+   <div class="header">WifiMon Connected Devices <br><a href="/logout">Logout</a> <a href="/dashboard">Dashboard</a></div>
+   
+   <div class="container">
+       <div class="table-container">
+           <h3>Connected Devices</h3>
+           <table>
+               <thead>
+                   <tr>
+                       <th>MAC Address</th>
+                       <th>Hostname</th>
+                       <th>Signal (dBm)</th>
+                       <th>Noise (dBm)</th>
+                       <th>SNR</th>
+                       <th>Last Seen (ms ago)</th>
+                       <th>RX Rate (MBit/s)</th>
+                       <th>RX MCS</th>
+                       <th>RX Bandwidth (MHz)</th>
+                       <th>RX NSS</th>
+                       <th>RX Packets</th>
+                       <th>TX Rate (MBit/s)</th>
+                       <th>TX MCS</th>
+                       <th>TX Bandwidth (MHz)</th>
+                       <th>TX NSS</th>
+                       <th>TX Packets</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   <% JSON.parse(data).forEach(function(device) { %>
+                       <tr>
+                           <td><%= device.mac %></td>
+                           <td><%= device.hostname %></td>
+                           <td><%= device.signal.current %></td>
+                           <td><%= device.signal.noise %></td>
+                           <td><%= device.signal.snr %></td>
+                           <td><%= device.signal.lastSeenMs %></td>
+                           <td><%= device.rx.rate %></td>
+                           <td><%= device.rx.mcs %></td>
+                           <td><%= device.rx.bandwidth %></td>
+                           <td><%= device.rx.nss %></td>
+                           <td><%= device.rx.packets %></td>
+                           <td><%= device.tx.rate %></td>
+                           <td><%= device.tx.mcs %></td>
+                           <td><%= device.tx.bandwidth %></td>
+                           <td><%= device.tx.nss %></td>
+                           <td><%= device.tx.packets %></td>
+                       </tr>
+                   <% }); %>
+               </tbody>
+           </table>
+       </div>
+   </div>
+</body>
+</html>
