@@ -239,6 +239,16 @@ app.get("/signup", function (req, res) {
     res.render("signup.ejs");
 });
 
+app.get("/deleteMons", async function(req, res){
+    try {
+        await Mon.deleteMany({});
+        res.send("All records deleted from Mon collection!");
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error deleting records.");
+    }
+})
+
 app.get("/dashboard", isLoggedIn, function (req, res) {
     Mon.find({}).then(function (mons) {
         res.render("dashboard.ejs", { mons: mons });
@@ -265,7 +275,7 @@ app.post("/mon", function (req, res) {
 
         Mon.create(newMon);
     });
-    res.redirect("/dashboard");
+    res.send("Mon route hit successfully!");
 });
 
 app.post("/login", passport.authenticate("local", {

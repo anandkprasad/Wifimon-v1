@@ -76,6 +76,7 @@
             <div class="card">
                 <h3>Monitoring</h3>
                 <button onclick="handleMon()"><span id="but-stat">Start Monitoring</span></button>
+                <button onclick="deleteMon()"><span id="but-stat">Clear All Data</span></button>
                 <p id="status">Monitoring stopped!</p>
             </div>
         </div>
@@ -138,6 +139,12 @@
                 xmlHttp.open( "GET", "/stop", false ); // false for synchronous request
                 xmlHttp.send( null );
             }
+        }
+
+          function deleteMon(){
+             var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", "/deleteMons", false ); // false for synchronous request
+                xmlHttp.send( null );
         }
 
 
